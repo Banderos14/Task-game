@@ -7,8 +7,8 @@ const TaskList = ({ userId }) => {
   const [xp, setXp] = useState(0);
   const [newTaskText, setNewTaskText] = useState("");
   const [filter, setFilter] = useState("all");
+  const [sort, setSort] = useState("date");
 
-  // ✅ Загружаем задачи и XP при изменении userId
   useEffect(() => {
     if (!userId) {
       console.log("❌ Нет userId, не загружаем задачи.");
@@ -32,14 +32,18 @@ const TaskList = ({ userId }) => {
       .catch(error => console.error("❌ Ошибка загрузки XP:", error));
   }, [userId]);
 
-  // ✅ Фильтрация задач
   const filteredTasks = tasks.filter((task) => {
     if (filter === "completed") return task.completed;
     if (filter === "active") return !task.completed;
-    return true; // "all" - показываем все задачи
+    return true;
   });
 
-  // ✅ Добавление новой задачи (сохранение в БД)
+  const sortedTasks = filteredTasks.sort((a, b) => {
+    if (sort === "priority") return b.priority - a.priority;
+    if (sort === "date") return new Date(b.createdAt) - new Date(a.createdAt);
+    return 0;
+  });
+
   const handleAddTask = async (e) => {
     e.preventDefault();
     if (!newTaskText.trim() || !userId) return;
@@ -53,7 +57,6 @@ const TaskList = ({ userId }) => {
     }
   };
 
-  // ✅ Выполнение задачи (и изменение XP)
   const toggleTask = async (taskId) => {
     try {
       const response = await axios.post("http://localhost:5000/api/tasks/toggle", { taskId, userId });
@@ -64,7 +67,6 @@ const TaskList = ({ userId }) => {
     }
   };
 
-  // ✅ Удаление задачи
   const deleteTask = async (taskId) => {
     try {
       await axios.delete(`http://localhost:5000/api/tasks/delete/${taskId}/${userId}`);
@@ -77,11 +79,7 @@ const TaskList = ({ userId }) => {
   return (
     <div className="p-4 bg-white shadow-lg rounded-lg">
       <h2 className="text-xl font-bold mb-4">Список задач</h2>
-
-      {/* ✅ Показываем XP */}
       <div className="mb-4 text-green-600 font-bold">XP: {xp}</div>
-
-      {/* ✅ Форма для добавления новой задачи */}
       <form onSubmit={handleAddTask} className="mb-4">
         <input
           type="text"
@@ -94,38 +92,42 @@ const TaskList = ({ userId }) => {
           Добавить задачу
         </button>
       </form>
-
-      {/* ✅ Фильтры */}
       <div className="mb-4">
         <button
           onClick={() => setFilter("all")}
-          className={`px-4 py-1 mr-2 rounded-lg ${
-            filter === "all" ? "bg-blue-500 text-white" : "bg-gray-200"
-          }`}
+          className={`px-4 py-1 mr-2 rounded-lg ${filter === "all" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
         >
           Все
         </button>
         <button
           onClick={() => setFilter("active")}
-          className={`px-4 py-1 mr-2 rounded-lg ${
-            filter === "active" ? "bg-blue-500 text-white" : "bg-gray-200"
-          }`}
+          className={`px-4 py-1 mr-2 rounded-lg ${filter === "active" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
         >
           Не выполненные
         </button>
         <button
           onClick={() => setFilter("completed")}
-          className={`px-4 py-1 rounded-lg ${
-            filter === "completed" ? "bg-blue-500 text-white" : "bg-gray-200"
-          }`}
+          className={`px-4 py-1 rounded-lg ${filter === "completed" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
         >
           Выполненные
         </button>
       </div>
-
-      {/* ✅ Список задач */}
-      {filteredTasks.length > 0 ? (
-        filteredTasks.map((task) => (
+      <div className="mb-4">
+        <button
+          onClick={() => setSort("date")}
+          className={`px-4 py-1 mr-2 rounded-lg ${sort === "date" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+        >
+          По дате
+        </button>
+        <button
+          onClick={() => setSort("priority")}
+          className={`px-4 py-1 rounded-lg ${sort === "priority" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+        >
+          По приоритету
+        </button>
+      </div>
+      {sortedTasks.length > 0 ? (
+        sortedTasks.map((task) => (
           <TaskItem
             key={task._id}
             task={task}

@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const authMiddleware = require("../middleware/authMiddleware"); // Middleware для проверки токена
+const authMiddleware = require("../middleware/authenticate"); // Middleware для проверки токена
 
 const router = express.Router();
 
