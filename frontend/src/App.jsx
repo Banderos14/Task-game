@@ -8,7 +8,7 @@ import UserInfo from "./components/profile/UserInfo";
 import axios from "axios";
 
 const App = () => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(null); // Используем null, чтобы знать, что проверка еще не выполнена
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
@@ -51,6 +51,11 @@ const App = () => {
         navigate("/login");
     };
 
+    // Показываем индикатор загрузки, пока статус isAuthenticated не определён
+    if (isAuthenticated === null) {
+        return <div className="flex items-center justify-center min-h-screen text-lg">Загрузка...</div>;
+    }
+
     return (
         <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
             <nav className="mb-4 flex gap-4">
@@ -71,14 +76,14 @@ const App = () => {
                 <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
                 <Route path="/register" element={<Register setUser={handleLogin} />} />
                 <Route path="/login" element={<Login setUser={handleLogin} />} />
-                <Route path="/dashboard" element={isAuthenticated ? (
-                    <>
-                        <TaskList userId={user ? user._id : null} />
-                        <FriendsList userId={user ? user._id : null} setUser={setUser} setIsAuthenticated={setIsAuthenticated} />
-                    </>
-                ) : (
-                    <Navigate to="/login" />
-                )} />
+                <Route path="/dashboard" element={
+                    isAuthenticated ? (
+                        <>
+                            <TaskList userId={user ? user._id : null} />
+                            <FriendsList userId={user ? user._id : null} setUser={setUser} setIsAuthenticated={setIsAuthenticated} />
+                        </>
+                    ) : <Navigate to="/login" />
+                } />
                 <Route path="/profile" element={isAuthenticated ? <UserInfo user={user} /> : <Navigate to="/login" />} />
             </Routes>
         </div>

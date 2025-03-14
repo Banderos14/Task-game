@@ -73,6 +73,7 @@ const TaskList = ({ userId }) => {
       if (response.data.levelUp) {
         setLevel(response.data.level);
         alert(`Поздравляем! Вы достигли уровня ${response.data.level}`);
+        setProgress(0); // Сбрасываем прогресс после повышения уровня
       }
     } catch (error) {
       console.error("❌ Ошибка выполнения задачи:", error);

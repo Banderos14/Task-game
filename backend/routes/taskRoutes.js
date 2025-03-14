@@ -64,9 +64,6 @@ router.post("/toggle", async (req, res) => {
             user.achievements.push(`Достигнут уровень ${user.level}`);
             user.completedTasks = 0; // Сбрасываем счетчик выполненных задач
             levelUp = true;
-        } else {
-            user.completedTasks = Math.max((user.completedTasks || 0) - 1, 0);
-            user.xp = Math.max((user.xp || 0) - 10, 0); // Уменьшаем XP при отмене выполнения задачи
         }
 
         await user.save();
