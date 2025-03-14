@@ -16,10 +16,7 @@ const App = () => {
         const token = localStorage.getItem("token");
         const storedUserId = localStorage.getItem("userId");
 
-        console.log("📌 Проверка перед загрузкой:", { token, storedUserId });
-
         if (!token || !storedUserId) {
-            console.log("❌ Нет токена или userId, выход");
             setIsAuthenticated(false);
             return;
         }
@@ -28,7 +25,6 @@ const App = () => {
             headers: { Authorization: `Bearer ${token}` }
         })
         .then(response => {
-            console.log("✅ Данные пользователя:", response.data);
             setUser(response.data);
             setIsAuthenticated(true);
         })
@@ -40,16 +36,14 @@ const App = () => {
     }, [navigate]);
 
     const handleLogin = (userId, token) => {
-        console.log("🎉 Успешный вход! UserID:", userId);
         localStorage.setItem("userId", userId);
         localStorage.setItem("token", token);
         setUser({ _id: userId });
         setIsAuthenticated(true);
-        navigate("/dashboard");  // ✅ Перенаправление на страницу задач и друзей после входа
+        navigate("/dashboard");
     };
 
     const handleLogout = () => {
-        console.log("🔴 Выход из системы");
         localStorage.removeItem("token");
         localStorage.removeItem("userId");
         setIsAuthenticated(false);
@@ -74,7 +68,7 @@ const App = () => {
             </nav>
 
             <Routes>
-                <Route path="/" element={!isAuthenticated ? <Navigate to="/login" /> : <Navigate to="/dashboard" />} />
+                <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
                 <Route path="/register" element={<Register setUser={handleLogin} />} />
                 <Route path="/login" element={<Login setUser={handleLogin} />} />
                 <Route path="/dashboard" element={isAuthenticated ? (

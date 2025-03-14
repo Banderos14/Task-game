@@ -5,16 +5,14 @@ import axios from "axios";
 const FriendsList = ({ userId, setUser, setIsAuthenticated }) => {
     const navigate = useNavigate();
     const [friends, setFriends] = useState([]);
-    const [newFriendId, setNewFriendId] = useState(""); // Добавляем состояние для нового друга
+    const [newFriendId, setNewFriendId] = useState("");
 
     useEffect(() => {
         if (!userId) return;
 
         axios.get(`http://localhost:5000/api/friends/${userId}`)
             .then(response => {
-                // ✅ Убираем дубликаты по _id
                 const uniqueFriends = Array.from(new Map(response.data.map(friend => [friend._id, friend])).values());
-                console.log("✅ Друзья получены:", response.data); // ✅ Выводим в консоль
                 setFriends(uniqueFriends);
             })
             .catch(error => {
@@ -24,23 +22,23 @@ const FriendsList = ({ userId, setUser, setIsAuthenticated }) => {
                 navigate("/login");
             });
     }, [userId, navigate, setIsAuthenticated, setUser]);
-    
+
     const addFriend = async (friendId) => {
         if (!userId || !friendId) {
             alert("❌ Ошибка: userId и friendId обязательны!");
             return;
         }
-    
+
         if (userId === friendId) {
             alert("❌ Ошибка: Нельзя добавить самого себя в друзья!");
             return;
         }
-    
+
         if (friends.some(friend => friend._id === friendId)) {
             alert("❌ Ошибка: Этот пользователь уже у вас в друзьях!");
             return;
         }
-    
+
         try {
             const response = await axios.post("http://localhost:5000/api/friends/add-friend", {
                 userId,
@@ -48,10 +46,9 @@ const FriendsList = ({ userId, setUser, setIsAuthenticated }) => {
             }, {
                 headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
             });
-    
-            console.log("✅ Друг добавлен:", response.data);
-            alert("✅ Друг успешно добавлен!");
-            setFriends([...friends, response.data.friend]); // Добавляем в список
+
+            setFriends([...friends, response.data.friend]);
+            setNewFriendId("");
         } catch (error) {
             console.error("❌ Ошибка при добавлении друга:", error.response?.data || error.message);
             alert(error.response?.data?.message || "Ошибка при добавлении друга");
@@ -64,8 +61,7 @@ const FriendsList = ({ userId, setUser, setIsAuthenticated }) => {
                 { userId, friendId },
                 { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
              );
-            setFriends(friends.filter(friend => friend._id !== friendId)); // Удаляем из списка
-            alert("✅ Друг удален!");
+            setFriends(friends.filter(friend => friend._id !== friendId));
         } catch (error) {
             console.error("❌ Ошибка при удалении друга:", error);
             alert(error.response?.data?.message || "Ошибка при удалении друга");
@@ -78,7 +74,7 @@ const FriendsList = ({ userId, setUser, setIsAuthenticated }) => {
             {friends.length > 0 ? (
                 <ul className="mt-2">
                     {friends.map(friend => (
-                        friend?._id ? ( // ✅ Проверяем, что friend._id существует
+                        friend?._id ? (
                             <li key={friend._id} className="p-2 border-b flex justify-between items-center">
                                 <div>
                                     <span className="font-bold">{friend.username}</span>
@@ -99,7 +95,6 @@ const FriendsList = ({ userId, setUser, setIsAuthenticated }) => {
                 <p className="text-gray-500 mt-2">У вас пока нет друзей.</p>
             )}
 
-            {/* Добавляем форму для добавления нового друга */}
             <div className="mt-4">
                 <input
                     type="text"

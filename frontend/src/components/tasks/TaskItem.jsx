@@ -53,12 +53,14 @@ const TaskItem = ({ task, toggleTask, deleteTask }) => {
           {task.text}
         </span>
         <div>
-          <button
-            onClick={() => toggleTask(task._id)}
-            className="px-4 py-1 bg-blue-500 text-white rounded-lg mr-2"
-          >
-            {task.completed ? "Отменить" : "Выполнено"}
-          </button>
+          {!task.completed && (
+            <button
+              onClick={() => toggleTask(task._id)}
+              className="px-4 py-1 bg-blue-500 text-white rounded-lg mr-2"
+            >
+              Выполнено
+            </button>
+          )}
           <button
             onClick={() => deleteTask(task._id)}
             className="px-4 py-1 bg-red-500 text-white rounded-lg"

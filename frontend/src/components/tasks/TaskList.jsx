@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import TaskItem from "./TaskItem";
+import ProgressBar from "../progress/ProgressBar";
 
 const TaskList = ({ userId }) => {
   const [tasks, setTasks] = useState([]);
@@ -8,6 +9,9 @@ const TaskList = ({ userId }) => {
   const [newTaskText, setNewTaskText] = useState("");
   const [filter, setFilter] = useState("all");
   const [sort, setSort] = useState("date");
+  const [progress, setProgress] = useState(0);
+  const [level, setLevel] = useState(1);
+  const [completedTasks, setCompletedTasks] = useState(0);
 
   useEffect(() => {
     if (!userId) {
@@ -21,28 +25,26 @@ const TaskList = ({ userId }) => {
       .then(response => {
         console.log("📌 Получены задачи:", response.data);
         setTasks(response.data);
+        updateProgress(response.data);
       })
       .catch(error => console.error("❌ Ошибка загрузки задач:", error));
 
     axios.get(`http://localhost:5000/api/auth/me`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }})
       .then(response => {
         console.log("📌 Получен XP:", response.data.xp);
-        setXp(response.data.xp);
+        setXp(response.data.xp || 0);
+        setLevel(response.data.level);
+        setCompletedTasks(response.data.completedTasks || 0);
       })
       .catch(error => console.error("❌ Ошибка загрузки XP:", error));
   }, [userId]);
 
-  const filteredTasks = tasks.filter((task) => {
-    if (filter === "completed") return task.completed;
-    if (filter === "active") return !task.completed;
-    return true;
-  });
-
-  const sortedTasks = filteredTasks.sort((a, b) => {
-    if (sort === "priority") return b.priority - a.priority;
-    if (sort === "date") return new Date(b.createdAt) - new Date(a.createdAt);
-    return 0;
-  });
+  const updateProgress = (tasks) => {
+    const completedTasks = tasks.filter(task => task.completed).length;
+    const totalTasks = tasks.length;
+    const progress = totalTasks === 0 ? 0 : (completedTasks / totalTasks) * 100;
+    setProgress(progress);
+  };
 
   const handleAddTask = async (e) => {
     e.preventDefault();
@@ -50,8 +52,10 @@ const TaskList = ({ userId }) => {
 
     try {
       const response = await axios.post("http://localhost:5000/api/tasks/add", { text: newTaskText, userId });
-      setTasks([...tasks, response.data]);
+      const updatedTasks = [...tasks, response.data];
+      setTasks(updatedTasks);
       setNewTaskText("");
+      updateProgress(updatedTasks);
     } catch (error) {
       console.error("❌ Ошибка добавления задачи:", error);
     }
@@ -60,26 +64,67 @@ const TaskList = ({ userId }) => {
   const toggleTask = async (taskId) => {
     try {
       const response = await axios.post("http://localhost:5000/api/tasks/toggle", { taskId, userId });
-      setTasks(tasks.map(task => (task._id === taskId ? response.data.task : task)));
-      setXp(response.data.xp);
+      const updatedTasks = tasks.map(task => (task._id === taskId ? response.data.task : task));
+      setTasks(updatedTasks);
+      setXp(response.data.xp || 0);
+      setCompletedTasks(response.data.completedTasks || 0);
+      updateProgress(updatedTasks);
+
+      if (response.data.levelUp) {
+        setLevel(response.data.level);
+        alert(`Поздравляем! Вы достигли уровня ${response.data.level}`);
+      }
     } catch (error) {
       console.error("❌ Ошибка выполнения задачи:", error);
+      alert(error.response?.data?.message || "Ошибка выполнения задачи");
     }
   };
 
   const deleteTask = async (taskId) => {
     try {
       await axios.delete(`http://localhost:5000/api/tasks/delete/${taskId}/${userId}`);
-      setTasks(tasks.filter(task => task._id !== taskId));
+      const updatedTasks = tasks.filter(task => task._id !== taskId);
+      setTasks(updatedTasks);
+      updateProgress(updatedTasks);
     } catch (error) {
       console.error("❌ Ошибка удаления задачи:", error);
     }
   };
 
+  const getFilteredTasks = () => {
+    switch (filter) {
+      case "active":
+        return tasks.filter(task => !task.completed);
+      case "completed":
+        return tasks.filter(task => task.completed);
+      default:
+        return tasks;
+    }
+  };
+
+  const getSortedTasks = (filteredTasks) => {
+    switch (sort) {
+      case "priority":
+        // Assuming tasks have a priority field
+        return filteredTasks.sort((a, b) => b.priority - a.priority);
+      case "date":
+      default:
+        return filteredTasks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    }
+  };
+
+  const filteredTasks = getFilteredTasks();
+  const sortedTasks = getSortedTasks(filteredTasks);
+
+  const requiredTasks = 5 * Math.pow(3, level - 1);
+  const tasksLeft = requiredTasks - (completedTasks || 0);
+
   return (
     <div className="p-4 bg-white shadow-lg rounded-lg">
       <h2 className="text-xl font-bold mb-4">Список задач</h2>
       <div className="mb-4 text-green-600 font-bold">XP: {xp}</div>
+      <div className="mb-4 text-green-600 font-bold">Уровень: {level} (Осталось задач: {tasksLeft})</div>
+      <ProgressBar progress={progress} />
       <form onSubmit={handleAddTask} className="mb-4">
         <input
           type="text"

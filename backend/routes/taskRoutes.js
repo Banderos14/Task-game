@@ -44,28 +44,39 @@ router.post("/toggle", async (req, res) => {
         const task = await Task.findOne({ _id: taskId, userId });
         if (!task) return res.status(404).json({ message: "❌ Задача не найдена" });
 
-        task.completed = !task.completed;
+        // Если задача уже выполнена, не позволяем отменить выполнение
+        if (task.completed) {
+            return res.status(400).json({ message: "❌ Нельзя отменить выполнение задачи" });
+        }
+
+        task.completed = true;
         await task.save();
 
-        // ✅ Обновляем XP пользователя
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: "❌ Пользователь не найден" });
 
-        if (task.completed) {
-            user.xp += 20; // +20 XP за выполнение задачи
+        user.completedTasks = (user.completedTasks || 0) + 1;
+        user.xp = (user.xp || 0) + 10; // Увеличиваем XP за выполнение задачи
+        const requiredTasks = 5 * Math.pow(3, user.level - 1);
+        let levelUp = false;
+        if (user.completedTasks >= requiredTasks) {
+            user.level += 1;
+            user.achievements.push(`Достигнут уровень ${user.level}`);
+            user.completedTasks = 0; // Сбрасываем счетчик выполненных задач
+            levelUp = true;
         } else {
-            user.xp = Math.max(user.xp - 20, 0); // -20 XP, но не меньше 0
+            user.completedTasks = Math.max((user.completedTasks || 0) - 1, 0);
+            user.xp = Math.max((user.xp || 0) - 10, 0); // Уменьшаем XP при отмене выполнения задачи
         }
 
         await user.save();
 
-        res.json({ task, xp: user.xp });
+        res.json({ task, level: user.level, achievements: user.achievements, completedTasks: user.completedTasks, xp: user.xp, levelUp });
     } catch (error) {
         console.error("❌ Ошибка переключения задачи:", error);
         res.status(500).json({ message: "Ошибка сервера" });
     }
 });
-
 
 // ✅ Удаление задачи
 router.delete("/delete/:taskId/:userId", async (req, res) => {
