@@ -16,14 +16,14 @@ router.get("/:userId", async (req, res) => {
 
 // ✅ Добавление новой задачи
 router.post("/add", async (req, res) => {
-    const { text, userId } = req.body;
+    const { text, description, date, priority, reminder, userId } = req.body;
 
     if (!text || !userId) {
         return res.status(400).json({ message: "❌ Текст задачи и userId обязательны" });
     }
 
     try {
-        const newTask = new Task({ text, completed: false, userId });
+        const newTask = new Task({ text, description, date, priority, reminder, completed: false, userId });
         await newTask.save();
         res.json(newTask);
     } catch (error) {
@@ -71,6 +71,31 @@ router.post("/toggle", async (req, res) => {
         res.json({ task, level: user.level, achievements: user.achievements, completedTasks: user.completedTasks, xp: user.xp, levelUp });
     } catch (error) {
         console.error("❌ Ошибка переключения задачи:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
+
+// ✅ Обновление задачи
+router.put("/update/:taskId", async (req, res) => {
+    const { taskId } = req.params;
+    const { text, description, date, priority, reminder } = req.body;
+
+    try {
+        const task = await Task.findById(taskId);
+        if (!task) {
+            return res.status(404).json({ message: "❌ Задача не найдена" });
+        }
+
+        task.text = text || task.text;
+        task.description = description || task.description;
+        task.date = date || task.date;
+        task.priority = priority || task.priority;
+        task.reminder = reminder || task.reminder;
+
+        await task.save();
+        res.json(task);
+    } catch (error) {
+        console.error("❌ Ошибка обновления задачи:", error);
         res.status(500).json({ message: "Ошибка сервера" });
     }
 });

@@ -1,48 +1,41 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
-import SubtaskItem from "./SubtaskItem";
-import CommentList from '../comments/CommentList';
 
-const TaskItem = ({ task, toggleTask, deleteTask }) => {
-  const [subtasks, setSubtasks] = useState([]);
-  const [newSubtaskText, setNewSubtaskText] = useState("");
+const TaskItem = ({ task, toggleTask, deleteTask, onUpdateTask }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [title, setTitle] = useState(task.text);
+  const [description, setDescription] = useState(task.description || "");
+  const [date, setDate] = useState(task.date ? new Date(task.date).toISOString().split('T')[0] : "");
+  const [priority, setPriority] = useState(task.priority || "low");
+  const [reminder, setReminder] = useState(task.reminder ? new Date(task.reminder).toISOString().slice(0, 16) : "");
 
-  useEffect(() => {
-    axios.get(`http://localhost:5000/api/subtasks/${task._id}`)
-      .then(response => {
-        setSubtasks(response.data);
-      })
-      .catch(error => console.error("❌ Ошибка загрузки подзадач:", error));
-  }, [task._id]);
-
-  const handleAddSubtask = async (e) => {
-    e.preventDefault();
-    if (!newSubtaskText.trim()) return;
-
+  const handleUpdateTask = async () => {
     try {
-      const response = await axios.post("http://localhost:5000/api/subtasks/add", { text: newSubtaskText, taskId: task._id });
-      setSubtasks([...subtasks, response.data]);
-      setNewSubtaskText("");
+      const updatedTask = {
+        ...task,
+        text: title,
+        description,
+        date,
+        priority,
+        reminder,
+      };
+      await axios.put(`http://localhost:5000/api/tasks/update/${task._id}`, updatedTask);
+      onUpdateTask(updatedTask);
+      setIsEditing(false);
     } catch (error) {
-      console.error("❌ Ошибка добавления подзадачи:", error);
+      console.error("❌ Ошибка обновления задачи:", error);
     }
   };
 
-  const toggleSubtask = async (subtaskId) => {
-    try {
-      const response = await axios.post("http://localhost:5000/api/subtasks/toggle", { subtaskId, taskId: task._id });
-      setSubtasks(subtasks.map(subtask => (subtask._id === subtaskId ? response.data : subtask)));
-    } catch (error) {
-      console.error("❌ Ошибка выполнения подзадачи:", error);
-    }
-  };
-
-  const deleteSubtask = async (subtaskId) => {
-    try {
-      await axios.delete(`http://localhost:5000/api/subtasks/delete/${subtaskId}/${task._id}`);
-      setSubtasks(subtasks.filter(subtask => subtask._id !== subtaskId));
-    } catch (error) {
-      console.error("❌ Ошибка удаления подзадачи:", error);
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case "high":
+        return "bg-red-600";
+      case "medium":
+        return "bg-orange-500";
+      case "low":
+      default:
+        return "bg-blue-500";
     }
   };
 
@@ -52,15 +45,17 @@ const TaskItem = ({ task, toggleTask, deleteTask }) => {
         <span className={`text-lg ${task.completed ? "line-through" : ""}`}>
           {task.text}
         </span>
-        <div>
-          {!task.completed && (
-            <button
-              onClick={() => toggleTask(task._id)}
-              className="px-4 py-1 bg-blue-500 text-white rounded-lg mr-2"
-            >
-              Выполнено
-            </button>
-          )}
+        <div className="flex items-center">
+          <button
+            onClick={() => toggleTask(task._id)}
+            className={`w-6 h-6 rounded-full ${getPriorityColor(task.priority)} mr-2`}
+          ></button>
+          <button
+            onClick={() => setIsEditing(!isEditing)}
+            className="px-4 py-1 bg-yellow-500 text-white rounded-lg mr-2"
+          >
+            Edit
+          </button>
           <button
             onClick={() => deleteTask(task._id)}
             className="px-4 py-1 bg-red-500 text-white rounded-lg"
@@ -69,30 +64,50 @@ const TaskItem = ({ task, toggleTask, deleteTask }) => {
           </button>
         </div>
       </div>
-      <div className="mt-4">
-        <h3 className="text-md font-bold mb-2">Подзадачи</h3>
-        {subtasks.map(subtask => (
-          <SubtaskItem
-            key={subtask._id}
-            subtask={subtask}
-            toggleSubtask={toggleSubtask}
-            deleteSubtask={deleteSubtask}
-          />
-        ))}
-        <form onSubmit={handleAddSubtask} className="mt-2">
+      {isEditing && (
+        <div className="mt-2">
           <input
             type="text"
             className="p-2 border rounded-lg w-full mb-2"
-            value={newSubtaskText}
-            onChange={(e) => setNewSubtaskText(e.target.value)}
-            placeholder="Добавить новую подзадачу"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Название задачи"
           />
-          <button type="submit" className="px-4 py-1 bg-blue-500 text-white rounded-lg">
-            Добавить подзадачу
+          <textarea
+            className="p-2 border rounded-lg w-full mb-2"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Описание задачи"
+          />
+          <input
+            type="date"
+            className="p-2 border rounded-lg w-full mb-2"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+          <select
+            className="p-2 border rounded-lg w-full mb-2"
+            value={priority}
+            onChange={(e) => setPriority(e.target.value)}
+          >
+            <option value="low">Низкий приоритет</option>
+            <option value="medium">Средний приоритет</option>
+            <option value="high">Высокий приоритет</option>
+          </select>
+          <input
+            type="datetime-local"
+            className="p-2 border rounded-lg w-full mb-2"
+            value={reminder}
+            onChange={(e) => setReminder(e.target.value)}
+          />
+          <button
+            onClick={handleUpdateTask}
+            className="px-4 py-2 bg-green-500 text-white rounded-lg"
+          >
+            Done
           </button>
-        </form>
-      </div>
-      <CommentList taskId={task._id} />
+        </div>
+      )}
     </div>
   );
 };

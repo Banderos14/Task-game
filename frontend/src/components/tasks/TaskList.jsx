@@ -2,16 +2,17 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import TaskItem from "./TaskItem";
 import ProgressBar from "../progress/ProgressBar";
+import AddTaskModal from "./AddTaskModal";
 
 const TaskList = ({ userId }) => {
   const [tasks, setTasks] = useState([]);
   const [xp, setXp] = useState(0);
   const [newTaskText, setNewTaskText] = useState("");
-  const [filter, setFilter] = useState("all");
-  const [sort, setSort] = useState("date");
+  const [filter, setFilter] = useState("active");
   const [progress, setProgress] = useState(0);
   const [level, setLevel] = useState(1);
   const [completedTasks, setCompletedTasks] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     if (!userId) {
@@ -35,14 +36,15 @@ const TaskList = ({ userId }) => {
         setXp(response.data.xp || 0);
         setLevel(response.data.level);
         setCompletedTasks(response.data.completedTasks || 0);
+        updateProgress(response.data.tasks || []);
       })
       .catch(error => console.error("❌ Ошибка загрузки XP:", error));
   }, [userId]);
 
   const updateProgress = (tasks) => {
     const completedTasks = tasks.filter(task => task.completed).length;
-    const totalTasks = tasks.length;
-    const progress = totalTasks === 0 ? 0 : (completedTasks / totalTasks) * 100;
+    const requiredTasks = 5 * Math.pow(3, level - 1);
+    const progress = Math.min((completedTasks / requiredTasks) * 100, 100);
     setProgress(progress);
   };
 
@@ -55,7 +57,6 @@ const TaskList = ({ userId }) => {
       const updatedTasks = [...tasks, response.data];
       setTasks(updatedTasks);
       setNewTaskText("");
-      updateProgress(updatedTasks);
     } catch (error) {
       console.error("❌ Ошибка добавления задачи:", error);
     }
@@ -74,6 +75,7 @@ const TaskList = ({ userId }) => {
         setLevel(response.data.level);
         alert(`Поздравляем! Вы достигли уровня ${response.data.level}`);
         setProgress(0); // Сбрасываем прогресс после повышения уровня
+        setTimeout(() => updateProgress(updatedTasks), 100); // Плавное увеличение прогресса
       }
     } catch (error) {
       console.error("❌ Ошибка выполнения задачи:", error);
@@ -92,6 +94,12 @@ const TaskList = ({ userId }) => {
     }
   };
 
+  const updateTask = (updatedTask) => {
+    const updatedTasks = tasks.map(task => (task._id === updatedTask._id ? updatedTask : task));
+    setTasks(updatedTasks);
+    updateProgress(updatedTasks);
+  };
+
   const getFilteredTasks = () => {
     switch (filter) {
       case "active":
@@ -103,19 +111,7 @@ const TaskList = ({ userId }) => {
     }
   };
 
-  const getSortedTasks = (filteredTasks) => {
-    switch (sort) {
-      case "priority":
-        // Assuming tasks have a priority field
-        return filteredTasks.sort((a, b) => b.priority - a.priority);
-      case "date":
-      default:
-        return filteredTasks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    }
-  };
-
   const filteredTasks = getFilteredTasks();
-  const sortedTasks = getSortedTasks(filteredTasks);
 
   const requiredTasks = 5 * Math.pow(3, level - 1);
   const tasksLeft = requiredTasks - (completedTasks || 0);
@@ -126,59 +122,43 @@ const TaskList = ({ userId }) => {
       <div className="mb-4 text-green-600 font-bold">XP: {xp}</div>
       <div className="mb-4 text-green-600 font-bold">Уровень: {level} (Осталось задач: {tasksLeft})</div>
       <ProgressBar progress={progress} />
-      <form onSubmit={handleAddTask} className="mb-4">
-        <input
-          type="text"
-          className="p-2 border rounded-lg w-full mb-2"
-          value={newTaskText}
-          onChange={(e) => setNewTaskText(e.target.value)}
-          placeholder="Добавить новую задачу"
-        />
-        <button type="submit" className="px-4 py-1 bg-blue-500 text-white rounded-lg">
-          Добавить задачу
-        </button>
-      </form>
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="px-4 py-2 bg-blue-500 text-white rounded-lg mb-4"
+      >
+        Добавить задачу
+      </button>
+      <AddTaskModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onTaskAdded={(newTask) => {
+          const updatedTasks = [...tasks, newTask];
+          setTasks(updatedTasks);
+        }}
+        userId={userId}
+      />
       <div className="mb-4">
-        <button
-          onClick={() => setFilter("all")}
-          className={`px-4 py-1 mr-2 rounded-lg ${filter === "all" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-        >
-          Все
-        </button>
         <button
           onClick={() => setFilter("active")}
           className={`px-4 py-1 mr-2 rounded-lg ${filter === "active" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
         >
-          Не выполненные
+          Сделать
         </button>
         <button
           onClick={() => setFilter("completed")}
           className={`px-4 py-1 rounded-lg ${filter === "completed" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
         >
-          Выполненные
+          Сделано
         </button>
       </div>
-      <div className="mb-4">
-        <button
-          onClick={() => setSort("date")}
-          className={`px-4 py-1 mr-2 rounded-lg ${sort === "date" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-        >
-          По дате
-        </button>
-        <button
-          onClick={() => setSort("priority")}
-          className={`px-4 py-1 rounded-lg ${sort === "priority" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-        >
-          По приоритету
-        </button>
-      </div>
-      {sortedTasks.length > 0 ? (
-        sortedTasks.map((task) => (
+      {filteredTasks.length > 0 ? (
+        filteredTasks.map((task) => (
           <TaskItem
             key={task._id}
             task={task}
             toggleTask={toggleTask}
             deleteTask={deleteTask}
+            onUpdateTask={updateTask}
           />
         ))
       ) : (
