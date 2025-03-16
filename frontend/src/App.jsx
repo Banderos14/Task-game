@@ -1,18 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Route, Routes, Navigate, useNavigate } from "react-router-dom";
 import TaskList from "./components/tasks/TaskList";
 import Register from "./components/auth/Register";
 import Login from "./components/auth/Login";
 import FriendsList from "./components/friends/FriendsList";
 import UserInfo from "./components/profile/UserInfo";
+import ProfileButton from "./components/profile/ProfileButton";
+import HabitList from "./components/habits/HabitList";
 import axios from "axios";
 
 const App = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(null); // Используем null, чтобы знать, что проверка еще не выполнена
     const [user, setUser] = useState(null);
+    const [dailyProgress, setDailyProgress] = useState(0);
     const navigate = useNavigate();
 
-    useEffect(() => {
+    const loadUserData = useCallback(async () => {
         const token = localStorage.getItem("token");
         const storedUserId = localStorage.getItem("userId");
 
@@ -21,19 +24,37 @@ const App = () => {
             return;
         }
 
-        axios.get("http://localhost:5000/api/auth/me", {
-            headers: { Authorization: `Bearer ${token}` }
-        })
-        .then(response => {
+        try {
+            const response = await axios.get("http://localhost:5000/api/auth/me", {
+                headers: { Authorization: `Bearer ${token}` }
+            });
             setUser(response.data);
             setIsAuthenticated(true);
-        })
-        .catch(error => {
+            const today = new Date().toISOString().split('T')[0];
+            const lastLogin = localStorage.getItem("lastLogin");
+            if (lastLogin !== today) {
+                setDailyProgress(0);
+                localStorage.setItem("lastLogin", today);
+            } else {
+                const completedTasks = response.data.dailyTasksCompleted || 0;
+                const progress = Math.min((completedTasks / 5) * 100, 100);
+                setDailyProgress(progress);
+                localStorage.setItem("dailyProgress", progress); // Сохранение в localStorage
+            }
+        } catch (error) {
             console.error("❌ Ошибка загрузки пользователя:", error);
             setIsAuthenticated(false);
             navigate("/login");
-        });
+        }
     }, [navigate]);
+
+    useEffect(() => {
+        loadUserData();
+        const savedProgress = localStorage.getItem("dailyProgress");
+        if (savedProgress) {
+            setDailyProgress(parseFloat(savedProgress));
+        }
+    }, [loadUserData]);
 
     const handleLogin = (userId, token) => {
         localStorage.setItem("userId", userId);
@@ -66,7 +87,7 @@ const App = () => {
                     </>
                 ) : (
                     <>
-                        <button onClick={() => navigate("/profile")} className="text-blue-600">Профиль</button>
+                        <ProfileButton user={user} progress={dailyProgress} />
                         <button onClick={handleLogout} className="text-red-600">Выйти</button>
                     </>
                 )}
@@ -79,12 +100,13 @@ const App = () => {
                 <Route path="/dashboard" element={
                     isAuthenticated ? (
                         <>
-                            <TaskList userId={user ? user._id : null} />
+                            <TaskList userId={user ? user._id : null} setDailyProgress={setDailyProgress} />
                             <FriendsList userId={user ? user._id : null} setUser={setUser} setIsAuthenticated={setIsAuthenticated} />
+                            <HabitList userId={user ? user._id : null} />
                         </>
                     ) : <Navigate to="/login" />
                 } />
-                <Route path="/profile" element={isAuthenticated ? <UserInfo user={user} /> : <Navigate to="/login" />} />
+                <Route path="/profile" element={isAuthenticated ? <UserInfo user={user} progress={dailyProgress} /> : <Navigate to="/login" />} />
             </Routes>
         </div>
     );

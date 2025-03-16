@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { FaEdit, FaTrash } from "react-icons/fa";
 
 const TaskItem = ({ task, toggleTask, deleteTask, onUpdateTask }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -7,7 +8,7 @@ const TaskItem = ({ task, toggleTask, deleteTask, onUpdateTask }) => {
   const [description, setDescription] = useState(task.description || "");
   const [date, setDate] = useState(task.date ? new Date(task.date).toISOString().split('T')[0] : "");
   const [priority, setPriority] = useState(task.priority || "low");
-  const [reminder, setReminder] = useState(task.reminder ? new Date(task.reminder).toISOString().slice(0, 16) : "");
+  const [reminder, setReminder] = useState(task.reminder ? new Date(task.reminder).toISOString().slice(11, 16) : "");
 
   const handleUpdateTask = async () => {
     try {
@@ -17,7 +18,7 @@ const TaskItem = ({ task, toggleTask, deleteTask, onUpdateTask }) => {
         description,
         date,
         priority,
-        reminder,
+        reminder: reminder ? new Date(`${date}T${reminder}`) : null,
       };
       await axios.put(`http://localhost:5000/api/tasks/update/${task._id}`, updatedTask);
       onUpdateTask(updatedTask);
@@ -39,12 +40,20 @@ const TaskItem = ({ task, toggleTask, deleteTask, onUpdateTask }) => {
     }
   };
 
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+  };
+
   return (
     <div className={`p-2 mb-2 border rounded-lg ${task.completed ? "bg-green-200" : "bg-gray-100"}`}>
       <div className="flex justify-between items-center">
-        <span className={`text-lg ${task.completed ? "line-through" : ""}`}>
-          {task.text}
-        </span>
+        <div className="flex items-center">
+          <span className="text-sm text-gray-500 mr-2">{formatTime(task.date)}</span>
+          <span className={`text-lg ${task.completed ? "line-through" : ""}`}>
+            {task.text}
+          </span>
+        </div>
         <div className="flex items-center">
           <button
             onClick={() => toggleTask(task._id)}
@@ -52,15 +61,15 @@ const TaskItem = ({ task, toggleTask, deleteTask, onUpdateTask }) => {
           ></button>
           <button
             onClick={() => setIsEditing(!isEditing)}
-            className="px-4 py-1 bg-yellow-500 text-white rounded-lg mr-2"
+            className="px-2 py-1 bg-yellow-500 text-white rounded-lg mr-2 flex items-center"
           >
-            Edit
+            <FaEdit />
           </button>
           <button
             onClick={() => deleteTask(task._id)}
-            className="px-4 py-1 bg-red-500 text-white rounded-lg"
+            className="px-2 py-1 bg-red-500 text-white rounded-lg flex items-center"
           >
-            Удалить
+            <FaTrash />
           </button>
         </div>
       </div>
@@ -95,7 +104,7 @@ const TaskItem = ({ task, toggleTask, deleteTask, onUpdateTask }) => {
             <option value="high">Высокий приоритет</option>
           </select>
           <input
-            type="datetime-local"
+            type="time"
             className="p-2 border rounded-lg w-full mb-2"
             value={reminder}
             onChange={(e) => setReminder(e.target.value)}

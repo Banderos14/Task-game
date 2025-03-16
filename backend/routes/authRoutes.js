@@ -2,11 +2,10 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const authMiddleware = require("../middleware/authenticate"); // Middleware для проверки токена
+const authMiddleware = require("../middleware/authenticate");
 
 const router = express.Router();
 
-// ✅ Регистрация с автоматическим токеном
 router.post("/register", async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -19,7 +18,7 @@ router.post("/register", async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         user = new User({ username, email, password: hashedPassword });
 
-        console.log("📌 Сохранение пользователя:", user);  // ✅ Проверка перед сохранением
+        console.log("📌 Сохранение пользователя:", user);
         await user.save();
 
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
@@ -31,7 +30,6 @@ router.post("/register", async (req, res) => {
     }
 });
 
-// ✅ Вход в систему (логин)
 router.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -55,17 +53,15 @@ router.post("/login", async (req, res) => {
     }
 });
 
-// ✅ Получить список всех пользователей (без паролей)
 router.get('/users', async (req, res) => {
     try {
-        const users = await User.find().select('-password'); // Не отправляем пароли
+        const users = await User.find().select('-password');
         res.json(users);
     } catch (error) {
         res.status(500).json({ message: '❌ Ошибка получения пользователей', error });
     }
 });
 
-// ✅ Маршрут /auth/me для проверки токена
 router.get("/me", authMiddleware, async (req, res) => {
     try {
         console.log("📌 Проверка пользователя с ID:", req.user.userId);

@@ -1,31 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-const AddTaskModal = ({ isOpen, onClose, onTaskAdded, userId }) => {
+const AddTaskModal = ({ isOpen, onClose, onTaskAdded, userId, filter }) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
   const [priority, setPriority] = useState("low");
   const [reminder, setReminder] = useState("");
 
+  useEffect(() => {
+    if (filter === "tomorrow") {
+      const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+      setDate(tomorrow);
+    } else if (filter === "today") {
+      const today = new Date().toISOString().split('T')[0];
+      setDate(today);
+    }
+  }, [filter]);
+
   const handleAddTask = async (e) => {
     e.preventDefault();
     if (!title.trim() || !userId) return;
 
     try {
+      const now = new Date();
       const response = await axios.post("http://localhost:5000/api/tasks/add", {
         text: title,
         description,
-        date,
+        date: now,
         priority,
-        reminder,
+        reminder: reminder ? new Date(`${date}T${reminder}`) : null,
         userId,
       });
       onTaskAdded(response.data);
       // Сбрасываем состояние полей формы
       setTitle("");
       setDescription("");
-      setDate("");
+      setDate(date); // Сохраняем текущую дату
       setPriority("low");
       setReminder("");
       onClose();
@@ -70,10 +81,11 @@ const AddTaskModal = ({ isOpen, onClose, onTaskAdded, userId }) => {
             <option value="high">Высокий приоритет</option>
           </select>
           <input
-            type="datetime-local"
+            type="time"
             className="p-2 border rounded-lg w-full mb-2"
             value={reminder}
             onChange={(e) => setReminder(e.target.value)}
+            placeholder="Напоминание (например, 13:00)"
           />
           <div className="flex justify-end">
             <button

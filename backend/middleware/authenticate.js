@@ -1,21 +1,20 @@
-const jwt = require("jsonwebtoken");
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-const authenticate = (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return res.status(401).json({ message: "Нет токена, авторизация отклонена" });
-    }
+const authMiddleware = async (req, res, next) => {
+  const token = req.header('Authorization').replace('Bearer ', '');
 
-    const token = authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: '❌ Токен не предоставлен' });
+  }
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
-        next();
-    } catch (error) {
-        console.error("Ошибка верификации токена:", error);
-        return res.status(401).json({ message: "Недействительный токен" });
-    }
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    res.status(401).json({ message: '❌ Неверный токен' });
+  }
 };
 
-module.exports = authenticate;
+module.exports = authMiddleware;

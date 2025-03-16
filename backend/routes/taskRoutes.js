@@ -44,20 +44,22 @@ router.post("/toggle", async (req, res) => {
         const task = await Task.findOne({ _id: taskId, userId });
         if (!task) return res.status(404).json({ message: "❌ Задача не найдена" });
 
-        // Если задача уже выполнена, не позволяем отменить выполнение
-        if (task.completed) {
-            return res.status(400).json({ message: "❌ Нельзя отменить выполнение задачи" });
-        }
-
-        task.completed = true;
-        await task.save();
-
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: "❌ Пользователь не найден" });
 
-        user.completedTasks = (user.completedTasks || 0) + 1;
-        user.xp = (user.xp || 0) + 10; // Увеличиваем XP за выполнение задачи
-        const requiredTasks = 5 * Math.pow(3, user.level - 1);
+        if (task.completed) {
+            task.completed = false;
+            user.xp = Math.max(0, (user.xp || 0) - 5); // Уменьшаем XP за отмену выполнения задачи
+            user.completedTasks = Math.max(0, (user.completedTasks || 0) - 1);
+            user.dailyTasksCompleted = Math.max(0, (user.dailyTasksCompleted || 0) - 1);
+        } else {
+            task.completed = true;
+            user.xp = (user.xp || 0) + 5; // Увеличиваем XP за выполнение задачи
+            user.completedTasks = (user.completedTasks || 0) + 1;
+            user.dailyTasksCompleted = (user.dailyTasksCompleted || 0) + 1;
+        }
+
+        const requiredTasks = user.level === 2 ? 15 : 5 * Math.pow(3, user.level - 1);
         let levelUp = false;
         if (user.completedTasks >= requiredTasks) {
             user.level += 1;
@@ -66,9 +68,10 @@ router.post("/toggle", async (req, res) => {
             levelUp = true;
         }
 
+        await task.save();
         await user.save();
 
-        res.json({ task, level: user.level, achievements: user.achievements, completedTasks: user.completedTasks, xp: user.xp, levelUp });
+        res.json({ task, level: user.level, achievements: user.achievements, completedTasks: user.completedTasks, xp: user.xp, levelUp, dailyTasksCompleted: user.dailyTasksCompleted });
     } catch (error) {
         console.error("❌ Ошибка переключения задачи:", error);
         res.status(500).json({ message: "Ошибка сервера" });
