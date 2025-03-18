@@ -18,7 +18,7 @@ const TaskItem = ({ task, toggleTask, deleteTask, onUpdateTask }) => {
         description,
         date,
         priority,
-        reminder: reminder ? new Date(`${date}T${reminder}`) : null,
+        reminder: reminder ? new Date(`${date}T${reminder}`).toISOString() : null,
       };
       await axios.put(`http://localhost:5000/api/tasks/update/${task._id}`, updatedTask);
       onUpdateTask(updatedTask);
@@ -42,14 +42,14 @@ const TaskItem = ({ task, toggleTask, deleteTask, onUpdateTask }) => {
 
   const formatTime = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    return isNaN(date) ? "Invalid date" : date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
   };
 
   return (
     <div className={`p-2 mb-2 border rounded-lg ${task.completed ? "bg-green-200" : "bg-gray-100"}`}>
       <div className="flex justify-between items-center">
         <div className="flex items-center">
-          <span className="text-sm text-gray-500 mr-2">{formatTime(task.date)}</span>
+          <span className="text-sm text-gray-500 mr-2">{formatTime(task.createdAt)}</span>
           <span className={`text-lg ${task.completed ? "line-through" : ""}`}>
             {task.text}
           </span>

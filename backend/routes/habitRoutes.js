@@ -77,10 +77,10 @@ router.post("/toggle", async (req, res) => {
         const habit = await Habit.findOne({ _id: habitId, userId });
         if (!habit) return res.status(404).json({ message: "❌ Привычка не найдена" });
 
-        habit.completed = !habit.completed;
+        habit.completed = !habit.completed; // Переключение состояния
         await habit.save();
 
-        res.json(habit);
+        res.json({ message: "Статус привычки обновлен", habit });
     } catch (error) {
         console.error("❌ Ошибка переключения привычки:", error);
         res.status(500).json({ message: "Ошибка сервера" });

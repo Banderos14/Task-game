@@ -23,7 +23,7 @@ router.post("/add", async (req, res) => {
     }
 
     try {
-        const newTask = new Task({ text, description, date, priority, reminder, completed: false, userId });
+        const newTask = new Task({ text, description, date, priority, reminder, completed: false, userId, createdAt: new Date() });
         await newTask.save();
         res.json(newTask);
     } catch (error) {
@@ -59,7 +59,7 @@ router.post("/toggle", async (req, res) => {
             user.dailyTasksCompleted = (user.dailyTasksCompleted || 0) + 1;
         }
 
-        const requiredTasks = user.level === 2 ? 15 : 5 * Math.pow(3, user.level - 1);
+        const requiredTasks = Math.pow(2, user.level - 1) * 3;
         let levelUp = false;
         if (user.completedTasks >= requiredTasks) {
             user.level += 1;
@@ -74,6 +74,24 @@ router.post("/toggle", async (req, res) => {
         res.json({ task, level: user.level, achievements: user.achievements, completedTasks: user.completedTasks, xp: user.xp, levelUp, dailyTasksCompleted: user.dailyTasksCompleted });
     } catch (error) {
         console.error("❌ Ошибка переключения задачи:", error);
+        res.status(500).json({ message: "Ошибка сервера" });
+    }
+});
+
+// ✅ Удаление задачи
+router.delete("/delete/:taskId", async (req, res) => {
+    const { taskId } = req.params;
+
+    try {
+        const task = await Task.findById(taskId);
+        if (!task) {
+            return res.status(404).json({ message: "❌ Задача не найдена" });
+        }
+
+        await Task.deleteOne({ _id: taskId });
+        res.json({ message: "✅ Задача успешно удалена" });
+    } catch (error) {
+        console.error("❌ Ошибка удаления задачи:", error);
         res.status(500).json({ message: "Ошибка сервера" });
     }
 });
@@ -93,25 +111,13 @@ router.put("/update/:taskId", async (req, res) => {
         task.description = description || task.description;
         task.date = date || task.date;
         task.priority = priority || task.priority;
-        task.reminder = reminder || task.reminder;
+        task.reminder = reminder ? new Date(reminder) : task.reminder;
 
         await task.save();
         res.json(task);
     } catch (error) {
         console.error("❌ Ошибка обновления задачи:", error);
         res.status(500).json({ message: "Ошибка сервера" });
-    }
-});
-
-// ✅ Удаление задачи
-router.delete("/delete/:taskId/:userId", async (req, res) => {
-    try {
-        const task = await Task.findOneAndDelete({ _id: req.params.taskId, userId: req.params.userId });
-        if (!task) return res.status(404).json({ message: "Задача не найдена" });
-
-        res.json({ message: "Задача удалена" });
-    } catch (error) {
-        res.status(500).json({ message: "Ошибка удаления задачи" });
     }
 });
 

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { FaEdit, FaTrash } from "react-icons/fa";
 
-const HabitItem = ({ habit, toggleTask, deleteHabit, onUpdateHabit }) => {
+const HabitItem = ({ habit, toggleHabit, deleteHabit, onUpdateHabit }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [habitText, setHabitText] = useState(habit.habit);
   const [repetitions, setRepetitions] = useState(habit.repetitions);
@@ -33,8 +33,8 @@ const HabitItem = ({ habit, toggleTask, deleteHabit, onUpdateHabit }) => {
         </div>
         <div className="flex items-center">
           <button
-            onClick={() => toggleTask(habit._id)}
-            className={`w-6 h-6 rounded-full bg-blue-500 mr-2`}
+            onClick={() => toggleHabit(habit._id)}
+            className={`w-6 h-6 rounded-full ${habit.completed ? "bg-green-500" : "bg-blue-500"} mr-2`}
           ></button>
           <button
             onClick={() => setIsEditing(!isEditing)}

@@ -23,25 +23,29 @@ const AddTaskModal = ({ isOpen, onClose, onTaskAdded, userId, filter }) => {
     if (!title.trim() || !userId) return;
 
     try {
-      const now = new Date();
-      const response = await axios.post("http://localhost:5000/api/tasks/add", {
-        text: title,
-        description,
-        date: now,
-        priority,
-        reminder: reminder ? new Date(`${date}T${reminder}`) : null,
-        userId,
-      });
-      onTaskAdded(response.data);
-      // Сбрасываем состояние полей формы
-      setTitle("");
-      setDescription("");
-      setDate(date); // Сохраняем текущую дату
-      setPriority("low");
-      setReminder("");
-      onClose();
+        const now = new Date();
+        const formattedDate = date || now.toISOString().split("T")[0]; // Если дата пустая, берем текущую дату
+        const formattedReminder = reminder ? new Date(`${formattedDate}T${reminder}:00`).toISOString() : null;
+
+        const response = await axios.post("http://localhost:5000/api/tasks/add", {
+            text: title,
+            description,
+            date: formattedDate,
+            priority,
+            reminder: formattedReminder,
+            userId,
+            createdAt: now.toISOString() // Сохраняем время создания задачи
+        });
+
+        onTaskAdded(response.data);
+        setTitle("");
+        setDescription("");
+        setDate(formattedDate);
+        setPriority("low");
+        setReminder("");
+        onClose();
     } catch (error) {
-      console.error("❌ Ошибка добавления задачи:", error);
+        console.error("❌ Ошибка добавления задачи:", error);
     }
   };
 

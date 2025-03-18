@@ -36,7 +36,7 @@ const UserInfo = ({ user, progress }) => {
 
     if (!userData) return null;
 
-    const requiredTasks = 5 * Math.pow(3, userData.level - 1);
+    const requiredTasks = userData.level === 2 ? 3 : 5 * Math.pow(3, userData.level - 1);
     const tasksLeft = requiredTasks - (userData.completedTasks || 0);
 
     return (
@@ -45,7 +45,7 @@ const UserInfo = ({ user, progress }) => {
             <p className="text-blue-600 font-mono">ID: {userData._id}</p>
             <p className="text-blue-600 font-mono">Имя пользователя: {userData.username}</p>
             <p className="text-blue-600 font-mono">Email: {userData.email}</p>
-            <p className="text-blue-600 font-mono">Уровень: {userData.level} (Осталось задач: {tasksLeft})</p>
+            <p className="text-blue-600 font-mono">Уровень: {userData.level} (Осталось задач: {Math.ceil(tasksLeft)})</p>
             <p className="text-blue-600 font-mono">XP: {userData.xp}</p>
             <h3 className="text-lg font-bold mt-4">Достижения</h3>
             <ul>

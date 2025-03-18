@@ -23,41 +23,63 @@ router.get("/:userId", async (req, res) => {
 // Добавление друга
 router.post("/add-friend", async (req, res) => {
     try {
-        const { userId, friendId } = req.body;
+        const { userId, friendIdentifier } = req.body;
 
-        if (!userId || !friendId) {
-            return res.status(400).json({ message: "❌ userId и friendId обязательны" });
+        if (!userId || !friendIdentifier) {
+            return res.status(400).json({ message: "❌ userId и friendIdentifier обязательны" });
         }
 
         const user = await User.findById(userId);
-        const friend = await User.findById(friendId);
-
-        if (!user || !friend) {
+        if (!user) {
             return res.status(404).json({ message: "❌ Пользователь не найден" });
         }
 
-        if (user.friends.includes(friendId)) {
+        let friend;
+        // Попробуем найти друга по никнейму
+        friend = await User.findOne({ username: { $regex: new RegExp("^" + friendIdentifier + "$", "i") } });
+
+        // Если не нашли по никнейму, попробуем найти по ID
+        if (!friend) {
+            try {
+                friend = await User.findById(friendIdentifier);
+            } catch (error) {
+                // Игнорируем ошибку, если friendIdentifier не является валидным ObjectId
+            }
+        }
+
+        if (!friend) {
+            return res.status(404).json({ message: "❌ Друг не найден" });
+        }
+
+        if (user.friends.some(id => id.toString() === friend._id.toString())) {
             return res.status(400).json({ message: "❌ Этот пользователь уже в друзьях" });
         }
 
-        user.friends.push(friendId);
+        user.friends.push(friend._id);
         friend.friends.push(userId);
 
         await user.save();
         await friend.save();
 
-        res.json({ message: "✅ Друг добавлен", friend });
+        res.json({ 
+            message: "✅ Друг добавлен", 
+            friend: { 
+                _id: friend._id, 
+                username: friend.username, 
+                xp: friend.xp, 
+                level: friend.level 
+            }
+        });
+
     } catch (error) {
-        console.error("Ошибка при добавлении друга:", error);
-        res.status(500).json({ message: "Ошибка сервера" });
+        console.error("Ошибка при добавлении друга:", error); // Теперь сервер покажет точную ошибку
+        res.status(500).json({ message: "Ошибка сервера", error: error.toString() });
     }
 });
 
 // Удаление друга
 router.post("/remove-friend", async (req, res) => {
     const { userId, friendId } = req.body;
-
-    console.log("📌 Запрос на удаление друга:", { userId, friendId });
 
     if (!userId || !friendId) {
         return res.status(400).json({ message: "❌ userId и friendId обязательны" });
@@ -67,24 +89,19 @@ router.post("/remove-friend", async (req, res) => {
         const user = await User.findById(userId);
         const friend = await User.findById(friendId);
 
-        if (!user) {
-            return res.status(404).json({ message: `❌ Пользователь ${userId} не найден` });
-        }
-        if (!friend) {
-            return res.status(404).json({ message: `❌ Друг ${friendId} не найден` });
+        if (!user || !friend) {
+            return res.status(404).json({ message: "❌ Пользователь не найден" });
         }
 
-        if (!user.friends.includes(friendId)) {
-            return res.status(400).json({ message: "❌ Этот пользователь не в списке друзей" });
-        }
+        user.friends = user.friends.filter(id => id.toString() !== friendId);
+        friend.friends = friend.friends.filter(id => id.toString() !== userId);
 
-        await User.findByIdAndUpdate(userId, { $pull: { friends: friendId } });
-        await User.findByIdAndUpdate(friendId, { $pull: { friends: userId } });
+        await user.save();
+        await friend.save();
 
-        console.log("✅ Друг успешно удален:", friendId);
         res.json({ message: "✅ Друг удален" });
     } catch (error) {
-        console.error("❌ Ошибка при удалении друга:", error);
+        console.error("Ошибка при удалении друга:", error);
         res.status(500).json({ message: "Ошибка сервера" });
     }
 });

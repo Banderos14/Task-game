@@ -23,16 +23,18 @@ const HabitList = ({ userId }) => {
       .catch(error => console.error("❌ Ошибка загрузки привычек:", error));
   }, [userId]);
 
-  const toggleTask = async (habitId) => {
+  const toggleHabit = async (habitId) => {
     try {
-      const response = await axios.post("http://localhost:5000/api/habits/toggle", { habitId, userId });
-      const updatedHabits = habits.map(habit => (habit._id === habitId ? response.data.habit : habit));
-      setHabits(updatedHabits);
+        const response = await axios.post("http://localhost:5000/api/habits/toggle", { habitId, userId });
+        const updatedHabits = habits.map(habit =>
+            habit._id === habitId ? { ...habit, completed: response.data.habit.completed } : habit
+        );
+        setHabits(updatedHabits);
     } catch (error) {
-      console.error("❌ Ошибка выполнения привычки:", error);
-      alert(error.response?.data?.message || "Ошибка выполнения привычки");
+        console.error("❌ Ошибка выполнения привычки:", error);
+        alert(error.response?.data?.message || "Ошибка выполнения привычки");
     }
-  };
+};
 
   return (
     <div className="p-4 bg-white shadow-lg rounded-lg">
@@ -57,7 +59,7 @@ const HabitList = ({ userId }) => {
           <HabitItem
             key={habit._id} // Убедитесь, что каждый элемент имеет уникальный ключ
             habit={habit}
-            toggleTask={toggleTask}
+            toggleHabit={toggleHabit}
             deleteHabit={(habitId) => {
               const updatedHabits = habits.filter(habit => habit._id !== habitId);
               setHabits(updatedHabits);

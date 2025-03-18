@@ -7,7 +7,16 @@ const TaskSchema = new mongoose.Schema({
     priority: { type: String, default: "low" },
     reminder: { type: Date },
     completed: { type: Boolean, default: false },
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true } // Привязка к пользователю
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Привязка к пользователю
+    createdAt: { type: Date, default: Date.now } // Добавляем поле для времени создания задачи
+});
+
+// Коррекция часового пояса для напоминаний перед сохранением
+TaskSchema.pre("save", function (next) {
+    if (this.reminder) {
+        this.reminder = new Date(this.reminder.getTime() - this.reminder.getTimezoneOffset() * 60000);
+    }
+    next();
 });
 
 module.exports = mongoose.model("Task", TaskSchema);
