@@ -1,60 +1,116 @@
-import { useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { TextField, Button, Paper, Typography, Box } from '@mui/material';
 
-const Register = ({ setUser }) => {
-    const [username, setUsername] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+export default function Register() {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+        if (password !== confirmPassword) {
+            setError('Пароли не совпадают');
+            return;
+        }
         try {
-            const response = await axios.post("http://localhost:5000/api/auth/register", { username, email, password });
+            const response = await fetch('http://localhost:5000/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email,
+                    password,
+                    username: email.split('@')[0] // Используем часть email как имя пользователя
+                }),
+            });
 
-            localStorage.setItem("token", response.data.token);
-            localStorage.setItem("userId", response.data.user._id);
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.message || 'Ошибка регистрации');
+            }
 
-            setUser(response.data.user._id, response.data.token); // Устанавливаем пользователя
-            navigate("/login"); // Перенаправляем на страницу задач и друзей после успешной регистрации
-        } catch (error) {
-            console.error("❌ Ошибка регистрации:", error.response?.data || error.message);
-            alert(error.response?.data?.message || "Ошибка при регистрации");
+            navigate('/login');
+        } catch (err) {
+            setError(err.message || 'Ошибка регистрации');
         }
     };
 
     return (
-        <div className="p-4 bg-white shadow rounded-lg text-center">
-            <h2 className="text-lg font-bold">📝 Регистрация</h2>
-            <form onSubmit={handleSubmit} className="mt-4">
-                <input
-                    type="text"
-                    placeholder="Введите имя"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="border p-2 rounded w-full mb-2"
-                />
-                <input
-                    type="email"
-                    placeholder="Введите email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="border p-2 rounded w-full mb-2"
-                />
-                <input
-                    type="password"
-                    placeholder="Введите пароль"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="border p-2 rounded w-full mb-2"
-                />
-                <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-                    Зарегистрироваться
-                </button>
-            </form>
-        </div>
+        <Box
+            sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                minHeight: '100vh',
+                bgcolor: 'background.default'
+            }}
+        >
+            <Paper
+                elevation={3}
+                sx={{
+                    p: 4,
+                    width: '100%',
+                    maxWidth: 400
+                }}
+            >
+                <Typography variant="h5" component="h1" gutterBottom>
+                    Регистрация
+                </Typography>
+                {error && (
+                    <Typography color="error" gutterBottom>
+                        {error}
+                    </Typography>
+                )}
+                <form onSubmit={handleSubmit}>
+                    <TextField
+                        fullWidth
+                        label="Email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        margin="normal"
+                        required
+                    />
+                    <TextField
+                        fullWidth
+                        label="Пароль"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        margin="normal"
+                        required
+                    />
+                    <TextField
+                        fullWidth
+                        label="Подтвердите пароль"
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        margin="normal"
+                        required
+                    />
+                    <Button
+                        type="submit"
+                        fullWidth
+                        variant="contained"
+                        sx={{ mt: 3 }}
+                    >
+                        Зарегистрироваться
+                    </Button>
+                </form>
+                <Box sx={{ mt: 2, textAlign: 'center' }}>
+                    <Typography variant="body2">
+                        Уже есть аккаунт?{' '}
+                        <Link to="/login" style={{ textDecoration: 'none' }}>
+                            Войти
+                        </Link>
+                    </Typography>
+                </Box>
+            </Paper>
+        </Box>
     );
-};
-export default Register;
+}

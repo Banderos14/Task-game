@@ -1,0 +1,1197 @@
+/* Основные стили */
+:root {
+    --primary-color: #4a6da7;
+    --primary-light: #6b8fc9;
+    --primary-dark: #2a4d87;
+    --secondary-color: #f5a742;
+    --secondary-light: #ffbc62;
+    --secondary-dark: #d58922;
+    --success-color: #4caf50;
+    --warning-color: #ff9800;
+    --danger-color: #f44336;
+    --gray-light: #f5f5f5;
+    --gray-medium: #e0e0e0;
+    --gray-dark: #757575;
+    --text-color: #333333;
+    --text-light: #757575;
+    --white: #ffffff;
+    --shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    --shadow-large: 0 4px 10px rgba(0, 0, 0, 0.15);
+    --border-radius: 8px;
+    --transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', 'Segoe UI', Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: #f9f9f9;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Заголовок */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--gray-medium);
+}
+
+header h1 {
+    color: var(--primary-dark);
+    font-size: 28px;
+}
+
+.user-stats {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-weight: 500;
+}
+
+.level, .points, .achievements {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.achievements i {
+    color: var(--secondary-color);
+    cursor: pointer;
+}
+
+/* Вкладки */
+.tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--gray-medium);
+}
+
+.tab-btn {
+    padding: 12px 20px;
+    background: none;
+    border: none;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+}
+
+.tab-btn:hover {
+    color: var(--primary-color);
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+}
+
+.tab-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--primary-color);
+}
+
+/* Содержимое вкладок */
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Заголовки разделов */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.section-header h2 {
+    color: var(--primary-dark);
+    font-size: 22px;
+}
+
+/* Кнопки */
+.btn-add {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: var(--primary-color);
+    color: var(--white);
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-add:hover {
+    background-color: var(--primary-dark);
+}
+
+.btn-add i {
+    font-size: 14px;
+}
+
+.btn-add-first {
+    padding: 10px 20px;
+    background-color: var(--primary-light);
+    color: var(--white);
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: 15px;
+}
+
+.btn-add-first:hover {
+    background-color: var(--primary-color);
+}
+
+/* Фильтры */
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: var(--gray-light);
+    border-radius: var(--border-radius);
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-group label {
+    font-weight: 500;
+    color: var(--text-light);
+}
+
+.filter-group select {
+    padding: 8px 12px;
+    border: 1px solid var(--gray-medium);
+    border-radius: var(--border-radius);
+    background-color: var(--white);
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+/* Пустое состояние */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    text-align: center;
+}
+
+.empty-state i {
+    font-size: 48px;
+    color: var(--gray-dark);
+    margin-bottom: 15px;
+}
+
+.empty-state p {
+    color: var(--text-light);
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+/* Домашние задания */
+.homework-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.homework-card {
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    transition: var(--transition);
+    border-left: 4px solid var(--primary-color);
+    position: relative;
+}
+
+.homework-card:hover {
+    box-shadow: var(--shadow-large);
+    transform: translateY(-2px);
+}
+
+.homework-card.completed {
+    border-left-color: var(--success-color);
+    opacity: 0.7;
+}
+
+.homework-card.urgent {
+    border-left-color: var(--danger-color);
+}
+
+.homework-card h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: var(--primary-dark);
+}
+
+.homework-card .subject {
+    font-size: 14px;
+    color: var(--text-light);
+    margin-bottom: 10px;
+}
+
+.homework-card .due-date {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    color: var(--text-light);
+    margin-bottom: 15px;
+}
+
+.homework-card .due-date.urgent {
+    color: var(--danger-color);
+    font-weight: 500;
+}
+
+.homework-card .description {
+    font-size: 14px;
+    color: var(--text-color);
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+
+.homework-card .actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.homework-card .checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.homework-card .checkbox input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.homework-card .card-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.homework-card .card-buttons button {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.homework-card .card-buttons button:hover {
+    color: var(--primary-color);
+}
+
+.homework-card .card-buttons .delete-btn:hover {
+    color: var(--danger-color);
+}
+
+/* Дедлайны */
+.deadlines-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.deadline-card {
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    transition: var(--transition);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 4px solid var(--primary-color);
+}
+
+.deadline-card:hover {
+    box-shadow: var(--shadow-large);
+}
+
+.deadline-card.high {
+    border-left-color: var(--danger-color);
+}
+
+.deadline-card.medium {
+    border-left-color: var(--warning-color);
+}
+
+.deadline-card.low {
+    border-left-color: var(--success-color);
+}
+
+.deadline-card .deadline-info {
+    flex: 1;
+}
+
+.deadline-card h3 {
+    font-size: 18px;
+    margin-bottom: 5px;
+    color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.deadline-card h3 .priority-badge {
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    color: var(--white);
+}
+
+.deadline-card h3 .priority-badge.high {
+    background-color: var(--danger-color);
+}
+
+.deadline-card h3 .priority-badge.medium {
+    background-color: var(--warning-color);
+}
+
+.deadline-card h3 .priority-badge.low {
+    background-color: var(--success-color);
+}
+
+.deadline-card .subject {
+    font-size: 14px;
+    color: var(--text-light);
+    margin-bottom: 5px;
+}
+
+.deadline-card .type {
+    font-size: 14px;
+    color: var(--text-light);
+    margin-bottom: 10px;
+}
+
+.deadline-card .due-date {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.deadline-card .due-date.urgent {
+    color: var(--danger-color);
+}
+
+.deadline-card .card-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.deadline-card .card-buttons button {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 16px;
+}
+
+.deadline-card .card-buttons button:hover {
+    color: var(--primary-color);
+}
+
+.deadline-card .card-buttons .delete-btn:hover {
+    color: var(--danger-color);
+}
+
+/* Экзамены - Переключатель видов */
+.view-toggle {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.view-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background-color: var(--gray-light);
+    color: var(--text-light);
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.view-btn:hover {
+    background-color: var(--gray-medium);
+}
+
+.view-btn.active {
+    background-color: var(--primary-color);
+    color: var(--white);
+}
+
+.exams-view {
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+}
+
+.exams-view.hidden {
+    display: none;
+}
+
+/* Экзамены - Календарь */
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.calendar-header button {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    font-size: 18px;
+    transition: var(--transition);
+}
+
+.calendar-header button:hover {
+    color: var(--primary-dark);
+}
+
+.calendar-header h3 {
+    font-size: 20px;
+    color: var(--primary-dark);
+}
+
+.calendar-grid {
+    width: 100%;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-weight: 500;
+    color: var(--text-light);
+    margin-bottom: 10px;
+}
+
+.calendar-days div {
+    padding: 10px;
+}
+
+.calendar-dates {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-auto-rows: minmax(100px, auto);
+    gap: 5px;
+}
+
+.calendar-date {
+    border: 1px solid var(--gray-medium);
+    border-radius: 4px;
+    padding: 8px;
+    min-height: 100px;
+    transition: var(--transition);
+    position: relative;
+}
+
+.calendar-date:hover {
+    background-color: var(--gray-light);
+}
+
+.calendar-date .date-number {
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.calendar-date.today {
+    background-color: rgba(74, 109, 167, 0.1);
+    border-color: var(--primary-color);
+}
+
+.calendar-date.today .date-number {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.calendar-date.other-month {
+    opacity: 0.5;
+}
+
+.calendar-date.has-exam {
+    background-color: rgba(245, 167, 66, 0.1);
+    border-color: var(--secondary-color);
+}
+
+.exam-indicator {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--primary-dark);
+    margin-bottom: 5px;
+    padding: 3px 5px;
+    background-color: rgba(74, 109, 167, 0.1);
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.exam-indicator:hover {
+    background-color: rgba(74, 109, 167, 0.2);
+}
+
+/* Экзамены - Таблица */
+.exams-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.exams-table th, .exams-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--gray-medium);
+}
+
+.exams-table th {
+    background-color: var(--gray-light);
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.exams-table tr:hover {
+    background-color: var(--gray-light);
+}
+
+.exams-table .actions {
+    display: flex;
+    gap: 10px;
+}
+
+.exams-table .actions button {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.exams-table .actions button:hover {
+    color: var(--primary-color);
+}
+
+.exams-table .actions .delete-btn:hover {
+    color: var(--danger-color);
+}
+
+/* Модальные окна */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.active {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-large);
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--gray-medium);
+}
+
+.modal-header h3 {
+    color: var(--primary-dark);
+    font-size: 20px;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.close-modal:hover {
+    color: var(--danger-color);
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 15px 20px;
+    border-top: 1px solid var(--gray-medium);
+}
+
+/* Формы */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--gray-medium);
+    border-radius: var(--border-radius);
+    font-size: 14px;
+    color: var(--text-color);
+    transition: var(--transition);
+}
+
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn-save {
+    padding: 10px 20px;
+    background-color: var(--primary-color);
+    color: var(--white);
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-save:hover {
+    background-color: var(--primary-dark);
+}
+
+.btn-cancel {
+    padding: 10px 20px;
+    background-color: var(--gray-medium);
+    color: var(--text-color);
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-cancel:hover {
+    background-color: var(--gray-dark);
+    color: var(--white);
+}
+
+.btn-edit-exam, .btn-delete-exam {
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-edit-exam {
+    background-color: var(--primary-color);
+    color: var(--white);
+}
+
+.btn-edit-exam:hover {
+    background-color: var(--primary-dark);
+}
+
+.btn-delete-exam {
+    background-color: var(--danger-color);
+    color: var(--white);
+}
+
+.btn-delete-exam:hover {
+    background-color: #d32f2f;
+}
+
+/* Уведомления */
+.notification-modal {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1001;
+    animation: slideIn 0.3s ease;
+}
+
+.notification-modal.active {
+    display: block;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+.notification-content {
+    background-color: var(--white);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-large);
+    width: 300px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.notification-content.urgent {
+    border-left-color: var(--danger-color);
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--gray-medium);
+}
+
+.notification-header h3 {
+    color: var(--primary-dark);
+    font-size: 16px;
+}
+
+.close-notification {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: var(--text-light);
+    cursor: pointer;
+}
+
+.notification-body {
+    padding: 15px;
+    font-size: 14px;
+}
+
+.notification-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 10px 15px;
+    border-top: 1px solid var(--gray-medium);
+}
+
+.btn-dismiss, .btn-view-details {
+    padding: 6px 12px;
+    border: none;
+    border-radius: var(--border-radius);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-dismiss {
+    background-color: var(--gray-medium);
+    color: var(--text-color);
+}
+
+.btn-dismiss:hover {
+    background-color: var(--gray-dark);
+    color: var(--white);
+}
+
+.btn-view-details {
+    background-color: var(--primary-color);
+    color: var(--white);
+}
+
+.btn-view-details:hover {
+    background-color: var(--primary-dark);
+}
+
+/* Достижения */
+.achievements-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.achievement-card {
+    background-color: var(--gray-light);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.achievement-card.unlocked {
+    background-color: rgba(245, 167, 66, 0.1);
+    border: 1px solid var(--secondary-color);
+}
+
+.achievement-card .achievement-icon {
+    font-size: 32px;
+    color: var(--gray-dark);
+    margin-bottom: 10px;
+}
+
+.achievement-card.unlocked .achievement-icon {
+    color: var(--secondary-color);
+}
+
+.achievement-card h4 {
+    font-size: 16px;
+    margin-bottom: 5px;
+    color: var(--text-color);
+}
+
+.achievement-card p {
+    font-size: 12px;
+    color: var(--text-light);
+}
+
+.achievement-card .achievement-date {
+    font-size: 12px;
+    color: var(--primary-color);
+    margin-top: 10px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .user-stats {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 5px;
+    }
+
+    .tab-btn {
+        padding: 10px 15px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .btn-add {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .filters {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filter-group {
+        width: 100%;
+    }
+
+    .filter-group select {
+        flex: 1;
+    }
+
+    .homework-list {
+        grid-template-columns: 1fr;
+    }
+
+    .deadline-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .deadline-card .card-buttons {
+        margin-top: 15px;
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .calendar-dates {
+        grid-auto-rows: minmax(80px, auto);
+    }
+
+    .calendar-date {
+        min-height: 80px;
+        padding: 5px;
+    }
+
+    .exams-table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .modal-content {
+        width: 95%;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-stats {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .calendar-days div {
+        padding: 5px;
+        font-size: 12px;
+    }
+
+    .calendar-date {
+        min-height: 60px;
+    }
+
+    .notification-modal {
+        left: 10px;
+        right: 10px;
+    }
+
+    .notification-content {
+        width: 100%;
+    }
+}
+
+.academic-tasks-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.academic-tasks-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--gray-medium);
+}
+
+.academic-tasks-header h1 {
+    color: var(--primary-dark);
+    font-size: 28px;
+}
+
+.user-stats {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-weight: 500;
+}
+
+.level, .points, .achievements {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.achievements {
+    color: var(--secondary-color);
+}
+
+.achievements-count {
+    margin-left: 5px;
+}
+
+.academic-tasks-tabs {
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--gray-medium);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: var(--gray-light);
+    border-radius: var(--border-radius);
+}
+
+.homework-section {
+    animation: fadeIn 0.3s ease;
+}
+
+.homework-card {
+    transition: var(--transition);
+    border-left: 4px solid var(--primary-color);
+}
+
+.homework-card.completed {
+    border-left-color: var(--success-color);
+    opacity: 0.7;
+}
+
+.homework-card.urgent {
+    border-left-color: var(--danger-color);
+}
+
+.homework-card .due-date {
+    color: var(--text-light);
+    margin: 8px 0;
+}
+
+.homework-card .due-date.urgent {
+    color: var(--danger-color);
+}
+
+.homework-card .description {
+    color: var(--text-light);
+    margin: 8px 0;
+}
+
+.card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Медиа-запросы */
+@media (max-width: 768px) {
+    .academic-tasks-container {
+        padding: 10px;
+    }
+
+    .academic-tasks-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .user-stats {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .filters {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-stats {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+}
